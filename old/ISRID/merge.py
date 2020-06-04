@@ -45,39 +45,36 @@ def main():
     settings_filename = 'settings.yaml'
     input_filename1, input_filename2 = 'ISRIDclean.xlsx', 'ISRID-updated.xlsx'
     output_filename = 'ISRID-merged.xlsx'
-    
+
     util.log('Reading settings file ... ')
     warnings.filterwarnings('ignore')
-    
+
     with open(settings_filename) as settings_file:
         settings = yaml.load(settings_file)
         style_settings = settings.get('styles', dict())
         column_settings = settings.get('columns', dict())
         title, styles = settings.get('title', 'ISRID'), dict()
         weather.API_TOKENS = settings['tokens']
-        
+
         util.log('Creating styles ... ')
         for attribute, arguments in style_settings.items():
-            if attribute == 'font':
-                style = openpyxl.styles.Font(**arguments)
-            else:
-                style = None
+            style = openpyxl.styles.Font(**arguments) if attribute == 'font' else None
             styles[attribute] = style
-    
+
     input_workbook1 = openpyxl.load_workbook(input_filename1, read_only=True)
     input_workbook2 = openpyxl.load_workbook(input_filename2, read_only=True)
     input_worksheet1, input_worksheet2 = (
         input_workbook1.active, input_workbook2.active)
-    
+
     output_workbook = openpyxl.Workbook(write_only=True, optimized_write=True)
     output_worksheet = output_workbook.create_sheet(title=title)
-    
+
     for row1, row2 in zip(input_worksheet1.rows, input_worksheet2.rows):
-        row1 = list(cell.value for cell in row1)
-        row2 = list(cell.value for cell in row2)
+        row1 = [cell.value for cell in row1]
+        row2 = [cell.value for cell in row2]
         output_worksheet.append(resolve_conflicts(row1, row2, 
             output_worksheet, styles))
-    
+
     """
     input_workbook3 = openpyxl.load_workbook(input_filename3, read_only=True)
     for input_worksheet3 in input_workbook3:
@@ -110,7 +107,7 @@ def main():
             else:
                 pass
     """
-    
+
     output_workbook.save(output_filename)
     util.log('Done.')
 

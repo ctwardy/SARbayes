@@ -16,12 +16,10 @@ from . import cleaning, models, processing
 
 
 def __bool__(self):
-    for column in self.__mapper__.columns:
-        if not column.primary_key:
-            if getattr(self, column.name) != None:
-                return True
-
-    return False
+    return any(
+        not (column.primary_key or getattr(self, column.name) is None)
+        for column in self.__mapper__.columns
+    )
 
 
 def __getitem__(self, name):

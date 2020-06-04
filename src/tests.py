@@ -152,8 +152,11 @@ class QueryingTests(unittest.TestCase):
 
     def test_column_properties(self):
         query = self.session.query(Subject)
-        self.assertEqual(query.filter(Subject.dead_on_arrival == None).count(),
-                         query.filter(Subject.survived == None).count())
+        self.assertEqual(
+            query.filter(Subject.dead_on_arrival is None).count(),
+            query.filter(Subject.survived is None).count(),
+        )
+
         self.assertEqual(query.filter(Subject.dead_on_arrival).count(),
                          query.filter(Subject.survived == False).count())
         self.assertEqual(query.filter(Subject.survived).count(), query.filter(

@@ -32,32 +32,32 @@ with open(tab_filename, 'w+') as tab_file:
     print('meta', 'class', '', '', '', '', '', '', '', '', 
         sep='\t', file=tab_file)
     """
-    
+
     for index, row in enumerate(worksheet.rows):
         values = tuple(cell.value for cell in row)
         if index == 0:
             continue
-        
+
         key, incident_datetime = values[1], values[4]
         city, county = values[9], values[10]
         category = values[20]
         age, sex, status = values[33], values[34], values[46]
         incident_duration = values[110]
         ipp = values[113]
-        
+
         if key <= 452:
             continue
-        
+
         if type(ipp) is str:
             lat, lon = ipp.split(', ')
             lat, lon = float(lat), float(lon)
-        
+
         if type(incident_datetime) is not datetime.datetime:
             if ':' not in incident_datetime:
                 incident_datetime += ' 00:00:00'
             incident_datetime = datetime.datetime.strptime(
                 incident_datetime, datefmt)
-        
+
         assert type(incident_datetime) is datetime.datetime
         conditions = None
         if lat and lon and incident_datetime:
@@ -65,7 +65,7 @@ with open(tab_filename, 'w+') as tab_file:
             conditions = weather.get_conditions(incident_datetime, point)
             print('({}, {}) @ "{}" -> {}'.format(lat, lon, 
                 incident_datetime.isoformat(), conditions))
-        
+
         key = str(key)
         if not status or 'N/A' in status.upper().strip():
             continue
@@ -73,22 +73,18 @@ with open(tab_filename, 'w+') as tab_file:
             status = 'DEAD'
         elif 'N/A' not in status.upper().strip():
             status = 'ALIVE'
-        
+
         age = str(age) if age else ''
         if sex is None:
             sex = ''
         else:
             sex = sex.upper()
             assert sex in ('M', 'F')
-        
-        if category:
-            category = category.upper().strip()
-        else:
-            category = ''
-        
+
+        category = category.upper().strip() if category else ''
         if not conditions:
             continue
-        
+
         high_temp = str(round(conditions['TMAX']/10, 3)) \
             if conditions['TMAX'] is not None else ''
         low_temp = str(round(conditions['TMIN']/10, 3)) \
@@ -100,7 +96,7 @@ with open(tab_filename, 'w+') as tab_file:
         rain = str(round(max(conditions['PRCP'] - (float(snow) 
             if type(snow) is str and snow else 0.0), 0.0), 3)) \
             if conditions['PRCP'] is not None else ''
-        
+
         features = [
             key, 
             status, 
@@ -113,5 +109,5 @@ with open(tab_filename, 'w+') as tab_file:
             snow, 
             rain
         ]
-        
+
         print('\t'.join(features), file=tab_file)

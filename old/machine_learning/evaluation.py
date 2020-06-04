@@ -29,7 +29,7 @@ class CaseBasedLearner(Orange.base.Learner):
     name = 'case-based learner'
     
     def __init__(self):
-        self._probabilities = dict()
+        self._probabilities = {}
     
     def __call__(self, train_data):
         # attr -> feature
@@ -85,14 +85,14 @@ class CaseBasedLearner(Orange.base.Learner):
                     raise ValueError
         
         def classifier(test_data):
-            _p = list()
+            _p = []
             for instance in test_data:
                 p = 1  # P(DOA)
                 for attr in instance.domain.attributes:
                     value = instance[attr.name]._value
                     if np.isnan(value):  # Missing attribute
                         continue
-                    
+
                     if attr.is_continuous:
                         for key in self._probabilities[attr.name]:
                             lowerbound, upperbound = key
@@ -103,7 +103,7 @@ class CaseBasedLearner(Orange.base.Learner):
                                 if n_lost > 0:
                                     p *= n_doa/n_lost
                                 break
-                    
+
                     elif attr.is_discrete:
                         value = int(value)
                         n_doa, n_lost = self._probabilities[attr.name].get(
@@ -111,7 +111,7 @@ class CaseBasedLearner(Orange.base.Learner):
                         assert n_doa <= n_lost
                         if n_lost > 0:
                             p *= n_doa/n_lost
-                    
+
                     else:
                         raise ValueError
                 else:
@@ -136,20 +136,22 @@ class LinearRegressionLearner(Orange.base.Learner):
     def __call__(self, training_data):
         def classifier(testing_data):
             states = []
-            
+
             for instance in testing_data:
-                p = []
-                for name, (m, b) in self.coefficients.items():
-                    if not np.isnan(instance[name]):
-                        p.append(m*instance[name] + b)
-                if len(p) == 0:
+                p = [
+                    m * instance[name] + b
+                    for name, (m, b) in self.coefficients.items()
+                    if not np.isnan(instance[name])
+                ]
+
+                if not p:
                     states.append(0.0)  # ALIVE
                 else:
-                    if np.mean(p)/100 < 0.88:
+                    if np.mean(p) < 0.88 * 100:
                         states.append(1.0)  # DEAD
                     else:
                         states.append(0.0)  # ALIVE
-            
+
             return states
         
         return classifier
@@ -178,7 +180,7 @@ def cross_validate(data, learner, folds=10):
 
 
 def get_class_names(data):
-    classes = set(instance.get_class() for instance in data)
+    classes = {instance.get_class() for instance in data}
     return {class_type.value: int(class_type._value) for class_type in classes}
 
 

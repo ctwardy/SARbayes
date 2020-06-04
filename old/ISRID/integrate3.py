@@ -46,7 +46,7 @@ _count = 0
 for _index, _row in enumerate(_input_worksheet.rows):
     if _index == 0:
         continue
-    _values = list(cell.value for cell in _row)
+    _values = [cell.value for cell in _row]
     sex = [x for x in (_values[34], _values[48], _values[62], _values[90]) if x is not None]
     status = [x for x in (_values[46], _values[60], _values[74], _values[76], _values[102]) if x is not None]
     __values.append((sex, status))
@@ -56,8 +56,8 @@ input_worksheet.max_row = 81707  # Important (defaults at 65536)
 
 count = 0
 for index, row in enumerate(input_worksheet.rows):
-    values = list(cell.value for cell in row)
-    
+    values = [cell.value for cell in row]
+
     if values[0] == 'US-OR' and values[1] is None:
         sex, status = __values[count]
         # values[6] = age
@@ -66,7 +66,7 @@ for index, row in enumerate(input_worksheet.rows):
         # values[9] = height
         values[10] = status
         count += 1
-    
+
     output_worksheet.append(cellify(values, output_worksheet, base_style))
 
 assert count == _count
@@ -80,40 +80,17 @@ with open('ISRID-NY.tab') as tab_file:
                 key = None
             if not status:
                 status = None
-            if age:
-                age = float(age)
-            else:
-                age = None
+            age = float(age) if age else None
             if not sex:
                 age = None
             if not category:
                 category = None
-            
-            if high_temp:
-                high_temp = float(high_temp)
-            else:
-                high_temp = None
-            
-            if low_temp:
-                low_temp = float(low_temp)
-            else:
-                low_temp = None
-            
-            if wind_speed:
-                wind_speed = float(wind_speed)
-            else:
-                wind_speed = None
-            
-            if snow:
-                snow = float(snow)
-            else:
-                snow = None
-            
-            if rain:
-                rain = float(rain)
-            else:
-                rain = None
-            
+
+            high_temp = float(high_temp) if high_temp else None
+            low_temp = float(low_temp) if low_temp else None
+            wind_speed = float(wind_speed) if wind_speed else None
+            snow = float(snow) if snow else None
+            rain = float(rain) if rain else None
             values = (
                 'US-NY', 
                 key, 
@@ -138,7 +115,7 @@ with open('ISRID-NY.tab') as tab_file:
                 snow, 
                 rain
             )
-            
+
             output_worksheet.append(cellify(values, output_worksheet, base_style))
 
 output_workbook.save('ISRID-survival.xlsx')
