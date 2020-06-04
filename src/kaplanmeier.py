@@ -35,7 +35,7 @@ def execute():
     df = df.assign(days=[total_hours.total_seconds()/3600/24
                          for total_hours in df.total_hours],
                    doa=[not survived for survived in df.survived])
-    df = df[0 <= df.days]
+    df = df[df.days >= 0]
 
     rows, columns = 2, 2
     grid, axes = plt.subplots(rows, columns, figsize=(15, 10))

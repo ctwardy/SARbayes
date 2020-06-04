@@ -71,18 +71,18 @@ def augment_weather_instance(weather, datetime_, ipp):
     collect = lambda field: map(lambda hourly: hourly.get(field, None), series)
 
     temperatures = list(scrub(collect('surfaceTemperatureCelsius')))
-    if len(temperatures) > 0:
+    if temperatures:
         if weather.low_temp is None:
             weather.low_temp = min(temperatures)
         if weather.high_temp is None:
             weather.high_temp = max(temperatures)
 
     wind_speeds = list(scrub(collect('windSpeedKph')))
-    if len(wind_speeds) > 0 and weather.wind_speed is None:
+    if wind_speeds and weather.wind_speed is None:
         weather.wind_speed = round(sum(wind_speeds)/len(wind_speeds), 3)
 
     solar_radiation = list(scrub(collect('downwardSolarRadiation')))
-    if len(solar_radiation) > 0 and weather.solar_radiation is None:
+    if solar_radiation and weather.solar_radiation is None:
         mean = sum(solar_radiation)/len(solar_radiation)
         weather.solar_radiation = round(mean, 3)
 
@@ -117,7 +117,7 @@ def augment_weather_instances(session, limit=5000, save_every=50):
 
     columns = Weather.high_temp, Weather.low_temp, Weather.wind_speed
     columns += Weather.snow, Weather.rain, Weather.solar_radiation
-    criteria = map(lambda column: column == None, columns)
+    criteria = map(lambda column: column is None, columns)
     query = query.filter(reduce(or_, criteria))
 
     count = 0

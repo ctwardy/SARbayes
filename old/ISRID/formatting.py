@@ -41,22 +41,19 @@ def _format_date(raw_date):
                 month, day, year = result.groups()
                 month, day, year = int(month), int(day), int(year)
                 if year < 100:
-                    if year > 15:
-                        year += 1900
-                    else:
-                        year += 2000
+                    year += 1900 if year > 15 else 2000
             else:
                 return
-            
+
             # Sanity check
             assert 1900 <= year <= 2015 and 1 <= month <= 12 and 1 <= day <= 31
-            
+
             result = TIME.search(raw_date)
             if result:
                 hour, minute, second, meridiem = result.groups()
                 hour, minute, second = int(hour), int(minute), \
                     0 if second is None else int(second)
-                
+
                 if meridiem == 'P':
                     hour = hour % 12 + 12
                     assert 12 <= hour < 24
@@ -65,12 +62,11 @@ def _format_date(raw_date):
                     assert 0 <= hour < 12
             else:
                 hour, minute, second = 0, 0, 0
-            
+
             # Sanity check
             assert 0 <= minute < 60 and 0 <= second < 60
-            
-            date = datetime.datetime(year, month, day, hour, minute, second)
-            return date
+
+            return datetime.datetime(year, month, day, hour, minute, second)
         except AssertionError:
             pass
 
@@ -192,21 +188,21 @@ def standardize(index, row_values, column_settings):
                 index, raw_date, date.isoformat()))
     except (KeyError, AssertionError):
         pass
-    
+
     try:
-        raw_key = row_values[column_settings['key']['index']]
-        raw_city = row_values[column_settings['city']['index']]
-        raw_county = row_values[column_settings['county']['index']]
         raw_lkp_ns = row_values[column_settings['lkp_ns']['index']]
         raw_lkp_ew = row_values[column_settings['lkp_ew']['index']]
-        
+
         if raw_lkp_ns or raw_lkp_ew:
+            raw_key = row_values[column_settings['key']['index']]
+            raw_city = row_values[column_settings['city']['index']]
+            raw_county = row_values[column_settings['county']['index']]
             lat, lon = _format_lkp(
                 index, raw_key, raw_city, raw_county, raw_lkp_ns, raw_lkp_ew)
-            
+
             assert type(lat) is type(lon) is float
             assert -90 <= lat <= 90 and -180 <= lon <= 180
-            
+
             lat, lon = round(lat, 6), round(lon, 6)
             row_values[column_settings['lkp_ns']['index']] = lat
             row_values[column_settings['lkp_ew']['index']] = lon

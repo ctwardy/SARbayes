@@ -60,8 +60,7 @@ def request_data(endpoint, safe=':,', **parameters):
         request = urllib.request.Request(url, 
             headers={'token': API_TOKENS[_token_index]})
         response = urllib.request.urlopen(request)
-        raw_data = json.loads(response.read().decode('utf-8'))
-        return raw_data
+        return json.loads(response.read().decode('utf-8'))
     except urllib.error.HTTPError:
         _token_index += 1
         util.log('Changing tokens ({}) ... '.format(_token_index))
@@ -109,7 +108,7 @@ def get_stations(date, coordinates, datasetid='GHCND', d=20):
     sw, ne = get_bounds(coordinates, d)
     extent = '{},{},{},{}'.format(
         sw.latitude, sw.longitude, ne.latitude, ne.longitude)
-    
+
     raw_data = request_data(
         'stations', 
         datasetid=datasetid, 
@@ -118,10 +117,9 @@ def get_stations(date, coordinates, datasetid='GHCND', d=20):
         extent=extent, 
         limit=1000
     )
-    
+
     if 'results' in raw_data:
-        for station in raw_data['results']:
-            yield station
+        yield from raw_data['results']
 
 
 def get_conditions(date, coordinates, datasetid='GHCND', d=20):
